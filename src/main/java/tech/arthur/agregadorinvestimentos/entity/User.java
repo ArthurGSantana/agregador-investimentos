@@ -2,6 +2,7 @@ package tech.arthur.agregadorinvestimentos.entity;
 
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,6 +19,9 @@ public class User {
 
     @Column(name = "password")
     private String password;
+
+    @OneToMany(mappedBy = "user")
+    private List<Account> accounts;
 
     public User() {
     }
@@ -59,5 +63,13 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<Account> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
     }
 }
