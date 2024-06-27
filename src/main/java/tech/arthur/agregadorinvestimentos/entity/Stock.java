@@ -2,35 +2,28 @@ package tech.arthur.agregadorinvestimentos.entity;
 
 import jakarta.persistence.*;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "account")
-public class Account {
+@Table(name = "stock")
+public class Stock {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @JoinColumn(name = "user_id")
-    @ManyToOne
-    private User user;
-
     @Column(name = "description")
     private String description;
 
-    @OneToOne(mappedBy = "account")
-    @PrimaryKeyJoinColumn
-    private BillingAddress billingAddress;
+    @Column(name = "ticker")
+    private BigDecimal ticker;
 
-    @OneToMany(mappedBy = "account")
-    private List<AccountStock> accountStocks;
-
-    public Account(String id, String description) {
+    public Stock(String id, String description, BigDecimal ticker) {
         this.id = id;
         this.description = description;
+        this.ticker = ticker;
     }
 
-    public Account() {
+    public Stock() {
     }
 
     public String getId() {
@@ -49,11 +42,11 @@ public class Account {
         this.description = description;
     }
 
-    public User getUser() {
-        return user;
+    public BigDecimal getTicker() {
+        return ticker;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setTicker(BigDecimal ticker) {
+        this.ticker = ticker;
     }
 }

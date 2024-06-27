@@ -3,6 +3,7 @@ package tech.arthur.agregadorinvestimentos.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "billing_address")
 public class BillingAddress {
     @Id
     @Column(name = "account_id")
