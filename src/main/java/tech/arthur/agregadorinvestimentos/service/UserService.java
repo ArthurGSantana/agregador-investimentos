@@ -1,8 +1,12 @@
 package tech.arthur.agregadorinvestimentos.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import tech.arthur.agregadorinvestimentos.entity.Account;
 import tech.arthur.agregadorinvestimentos.entity.User;
-import tech.arthur.agregadorinvestimentos.model.dto.UserDTO;
+import tech.arthur.agregadorinvestimentos.model.dto.AccountListDto;
+import tech.arthur.agregadorinvestimentos.model.dto.UserDto;
 import tech.arthur.agregadorinvestimentos.repository.UserRepository;
 
 import java.util.List;
@@ -16,24 +20,30 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public UserDTO GetUserById(String id) {
+    public UserDto getUserById(String id) {
         var user = userRepository.findById(id);
-        return user.map(value -> new UserDTO(value.getId(), value.getUsername(), value.getEmail(), null)).orElse(null);
+        return user.map(value -> new UserDto(value.getId(), value.getUsername(), value.getEmail(), null)).orElse(null);
     }
 
-    public List<UserDTO> GetAllUsers() {
+    public List<UserDto> getAllUsers() {
         var users = userRepository.findAll();
-        return users.stream().map(user -> new UserDTO(user.getId(), user.getUsername(), user.getEmail(), null)).toList();
+        return users.stream().map(user -> new UserDto(user.getId(), user.getUsername(), user.getEmail(), null)).toList();
     }
 
-    public User createUser(UserDTO userDTO) {
+    public List<AccountListDto> listAccounts(String userId) {
+        var user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        return user.getAccounts().stream().map(account -> new AccountListDto(account.getId(), account.getDescription())).toList();
+    }
+
+    public User createUser(UserDto userDTO) {
         var newUser = new User(UUID.randomUUID().toString(), userDTO.username(), userDTO.email(), userDTO.password().orElse(null));
         userRepository.save(newUser);
 
         return newUser;
     }
 
-    public void updateUser(String id, UserDTO userDTO) {
+    public void updateUser(String id, UserDto userDTO) {
         var user = userRepository.findById(id);
 
         if (user.isEmpty()) {

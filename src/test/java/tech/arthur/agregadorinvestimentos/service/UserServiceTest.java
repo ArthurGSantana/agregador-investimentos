@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tech.arthur.agregadorinvestimentos.entity.User;
-import tech.arthur.agregadorinvestimentos.model.dto.UserDTO;
+import tech.arthur.agregadorinvestimentos.model.dto.UserDto;
 import tech.arthur.agregadorinvestimentos.repository.UserRepository;
 
 import java.util.List;
@@ -46,7 +46,7 @@ class UserServiceTest {
             doReturn(Optional.of(user)).when(userRepository).findById(stringArgumentCaptor.capture());
 
             // Act
-            var result = userService.GetUserById(user.getId());
+            var result = userService.getUserById(user.getId());
 
             // Assert
             assertNotNull(result);
@@ -63,7 +63,7 @@ class UserServiceTest {
             var input = UUID.randomUUID().toString();
 
             // Act
-            var result = userService.GetUserById(input);
+            var result = userService.getUserById(input);
 
             // Assert
             assertNull(result);
@@ -81,7 +81,7 @@ class UserServiceTest {
             doReturn(List.of(user1, user2)).when(userRepository).findAll();
 
             // Act
-            var result = userService.GetAllUsers();
+            var result = userService.getAllUsers();
 
             // Assert
             assertNotNull(result);
@@ -105,7 +105,7 @@ class UserServiceTest {
             doReturn(List.of()).when(userRepository).findAll();
 
             // Act
-            var result = userService.GetAllUsers();
+            var result = userService.getAllUsers();
 
             // Assert
             assertNotNull(result);
@@ -122,7 +122,7 @@ class UserServiceTest {
             // Arrange
             var user = new User(UUID.randomUUID().toString(), "username", "email", "password");
             doReturn(user).when(userRepository).save(userArgumentCaptor.capture());
-            var input = new UserDTO(null, "username", "email", Optional.of("password"));
+            var input = new UserDto(null, "username", "email", Optional.of("password"));
 
             // Act
             var result = userService.createUser(input);
@@ -142,7 +142,7 @@ class UserServiceTest {
         void shouldThrowAnExceptionWhenErrorOccurs() {
             // Arrange
             doThrow(new RuntimeException()).when(userRepository).save(any());
-            var input = new UserDTO(null, "username", "email", Optional.of("password"));
+            var input = new UserDto(null, "username", "email", Optional.of("password"));
 
             // Act & Assert
             assertThrows(RuntimeException.class, () -> userService.createUser(input));
@@ -158,7 +158,7 @@ class UserServiceTest {
             var user = new User(UUID.randomUUID().toString(), "username", "email", "password");
             doReturn(Optional.of(user)).when(userRepository).findById(stringArgumentCaptor.capture());
             doReturn(user).when(userRepository).save(userArgumentCaptor.capture());
-            var input = new UserDTO(null, "new username", null, Optional.of("new password"));
+            var input = new UserDto(null, "new username", null, Optional.of("new password"));
 
             // Act
             userService.updateUser(user.getId(), input);
@@ -179,7 +179,7 @@ class UserServiceTest {
             doReturn(Optional.empty()).when(userRepository).findById(stringArgumentCaptor.capture());
 
             var id = UUID.randomUUID().toString();
-            var input = new UserDTO(null, "new username", null, Optional.of("new password"));
+            var input = new UserDto(null, "new username", null, Optional.of("new password"));
 
             // Act
             userService.updateUser(id, input);

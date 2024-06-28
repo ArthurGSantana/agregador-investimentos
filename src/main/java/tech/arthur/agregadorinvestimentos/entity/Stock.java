@@ -15,9 +15,9 @@ public class Stock {
     private String description;
 
     @Column(name = "ticker")
-    private BigDecimal ticker;
+    private String ticker;
 
-    public Stock(String id, String description, BigDecimal ticker) {
+    public Stock(String id, String description, String ticker) {
         this.id = id;
         this.description = description;
         this.ticker = ticker;
@@ -42,11 +42,11 @@ public class Stock {
         this.description = description;
     }
 
-    public BigDecimal getTicker() {
+    public String getTicker() {
         return ticker;
     }
 
-    public void setTicker(BigDecimal ticker) {
+    public void setTicker(String ticker) {
         this.ticker = ticker;
     }
 }

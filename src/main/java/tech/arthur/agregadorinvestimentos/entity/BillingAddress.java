@@ -9,7 +9,7 @@ public class BillingAddress {
     @Column(name = "account_id")
     private String id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @MapsId
     @JoinColumn(name = "account_id")
     private Account account;
@@ -20,8 +20,9 @@ public class BillingAddress {
     @Column(name = "number")
     private Integer number;
 
-    public BillingAddress(String id, String street, Integer number) {
+    public BillingAddress(String id, Account account, String street, Integer number) {
         this.id = id;
+        this.account = account;
         this.street = street;
         this.number = number;
     }
@@ -51,5 +52,13 @@ public class BillingAddress {
 
     public void setNumber(Integer number) {
         this.number = number;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 }
