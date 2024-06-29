@@ -1,8 +1,8 @@
 package tech.arthur.agregadorinvestimentos.model.dto;
 
-public record StockDto(
+public record StockResponseDto(
         String id,
         String ticker,
-        String description
+        Integer quantity
 ) {
 }

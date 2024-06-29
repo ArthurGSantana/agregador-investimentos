@@ -5,14 +5,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import tech.arthur.agregadorinvestimentos.entity.Account;
+import tech.arthur.agregadorinvestimentos.entity.AccountStock;
 import tech.arthur.agregadorinvestimentos.entity.BillingAddress;
+import tech.arthur.agregadorinvestimentos.entity.id.AccountStockId;
 import tech.arthur.agregadorinvestimentos.model.dto.AccountDto;
 import tech.arthur.agregadorinvestimentos.model.dto.AccountResponseDto;
-import tech.arthur.agregadorinvestimentos.model.dto.StockDto;
+import tech.arthur.agregadorinvestimentos.model.dto.AccountStockDto;
+import tech.arthur.agregadorinvestimentos.model.dto.StockResponseDto;
 import tech.arthur.agregadorinvestimentos.repository.AccountRepository;
+import tech.arthur.agregadorinvestimentos.repository.AccountStockRepository;
+import tech.arthur.agregadorinvestimentos.repository.StockRepository;
 import tech.arthur.agregadorinvestimentos.repository.UserRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -20,21 +24,27 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final BillingAddressService billingAddressService;
+    private final AccountStockRepository accountStockRepository;
+    private final StockRepository stockRepository;
 
-    public AccountService(AccountRepository accountRepository, UserRepository userRepository, BillingAddressService billingAddressService) {
+    public AccountService(AccountRepository accountRepository, UserRepository userRepository, BillingAddressService billingAddressService, AccountStockRepository accountStockRepository, StockRepository stockRepository) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.billingAddressService = billingAddressService;
+        this.accountStockRepository = accountStockRepository;
+        this.stockRepository = stockRepository;
     }
 
     public AccountResponseDto getAccountById(String id) {
         return accountRepository.findById(id)
                 .map(account -> new AccountResponseDto(
+                        account.getId(),
                         account.getDescription(),
                         account.getBillingAddress().getStreet(),
                         account.getBillingAddress().getNumber(),
                         account.getAccountStocks().stream()
-                                .map(accountStock -> new StockDto(
+                                .map(accountStock -> new StockResponseDto(
+                                        accountStock.getStock().getId(),
                                         accountStock.getStock().getTicker(),
                                         accountStock.getQuantity()
                                 ))
@@ -63,5 +73,20 @@ public class AccountService {
         );
 
         billingAddressService.createBillingAddress(billingAddress);
+    }
+
+    @Transactional
+    public void associateStock(AccountStockDto accountStockDto) {
+        var account = accountRepository.findById(accountStockDto.accountId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        var stock = stockRepository.findById(accountStockDto.stockId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        var accountStock = new AccountStock(
+                new AccountStockId(account.getId(), stock.getId()),
+                account,
+                stock,
+                accountStockDto.quantity()
+        );
+
+        accountStockRepository.save(accountStock);
     }
 }
