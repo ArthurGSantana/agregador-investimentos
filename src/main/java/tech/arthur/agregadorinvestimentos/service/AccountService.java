@@ -1,9 +1,11 @@
 package tech.arthur.agregadorinvestimentos.service;
 
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import tech.arthur.agregadorinvestimentos.client.BrapiClient;
 import tech.arthur.agregadorinvestimentos.entity.Account;
 import tech.arthur.agregadorinvestimentos.entity.AccountStock;
 import tech.arthur.agregadorinvestimentos.entity.BillingAddress;
@@ -17,6 +19,8 @@ import tech.arthur.agregadorinvestimentos.repository.AccountStockRepository;
 import tech.arthur.agregadorinvestimentos.repository.StockRepository;
 import tech.arthur.agregadorinvestimentos.repository.UserRepository;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -26,13 +30,22 @@ public class AccountService {
     private final BillingAddressService billingAddressService;
     private final AccountStockRepository accountStockRepository;
     private final StockRepository stockRepository;
+    private final BrapiClient brapiClient;
 
-    public AccountService(AccountRepository accountRepository, UserRepository userRepository, BillingAddressService billingAddressService, AccountStockRepository accountStockRepository, StockRepository stockRepository) {
+    private Map<String, Double> stockPrices;
+
+    @Value("${TOKEN_BRAPI}")
+    private String TOKEN_BRAPI;
+
+    public AccountService(AccountRepository accountRepository, UserRepository userRepository, BillingAddressService billingAddressService, AccountStockRepository accountStockRepository, StockRepository stockRepository, BrapiClient brapiClient) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.billingAddressService = billingAddressService;
         this.accountStockRepository = accountStockRepository;
         this.stockRepository = stockRepository;
+        this.brapiClient = brapiClient;
+
+        this.stockPrices = new HashMap<>();
     }
 
     public AccountResponseDto getAccountById(String id) {
@@ -46,11 +59,22 @@ public class AccountService {
                                 .map(accountStock -> new StockResponseDto(
                                         accountStock.getStock().getId(),
                                         accountStock.getStock().getTicker(),
-                                        accountStock.getQuantity()
+                                        accountStock.getQuantity(),
+                                        getTotal(accountStock.getStock().getTicker(), accountStock.getQuantity()),
+                                        stockPrices.get(accountStock.getStock().getTicker())
                                 ))
                                 .toList()
                 ))
                 .orElseThrow(() -> new RuntimeException("Account not found"));
+    }
+
+    public Double getTotal(String ticker, Integer quantity) {
+        var brapiResponse = brapiClient.getQuote(TOKEN_BRAPI, ticker);
+        var regularMarketPrice = brapiResponse.results().getFirst().regularMarketPrice();
+
+        stockPrices.put(ticker, regularMarketPrice);
+
+        return regularMarketPrice * quantity;
     }
 
     @Transactional
